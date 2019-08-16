@@ -62,7 +62,7 @@ void setup(void)
   // Wait for connection
   while (WiFi.status() != WL_CONNECTED) 
   {
-    delay(500);
+    delay(200);
     DEBUG_PRINT("*");
   }
   DEBUG_PRINTLN("");
@@ -88,9 +88,7 @@ void setup(void)
 
 void beep()
 {
-  //digitalWrite(LED_BUILTIN, LOW);
   tone(BUZZER_PIN,4000,100);
-  //digitalWrite(LED_BUILTIN, HIGH);
 }
 
 void relayToggle(int rel) 
