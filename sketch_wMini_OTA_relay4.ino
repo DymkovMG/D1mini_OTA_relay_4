@@ -2,6 +2,7 @@
 #include <ArduinoOTA.h>
 #include <PushButtonClicks.h>
 #include <ShiftRegister74HC595.h>
+#include <ESP8266WebServer.h>
 
 //#define DEBUG 
 #ifdef DEBUG
@@ -23,6 +24,9 @@
 
 const char* ssid = STASSID;
 const char* password = STAPSK;
+
+const char* www_username = "admin";
+const char* www_password = "esp8266";
 
 #define BUZZER_PIN  D5
 #define BUTTON_PIN  D6
@@ -78,6 +82,14 @@ void setup(void)
   // ArduinoOTA.setPassword("admin");
   ArduinoOTA.begin();
   
+  server.on("/", []()
+            {
+              if(!server.authenticate(www_username, www_password)) return server.requestAuthentication();
+              server.send(200, "text/plain", "Login OK");
+            });
+  
+  server.begin();
+  
   digitalWrite(LED_BUILTIN, HIGH);//откл светодиод
   beep();
   DEBUG_PRINTLN("Initialization..OK");
@@ -125,10 +137,11 @@ void relaysToggle()
 void loop(void) 
 {
   ArduinoOTA.handle();
+  server.handleClient();
   switch(myButton.buttonCheck(millis(), digitalRead(BUTTON_PIN))) 
   {
     case 1 : DEBUG_PRINTLN("Pressed and not released for a long time"); break;
-    case 2 : DEBUG_PRINTLN("Pressed and released after a long time"); beep();relaysToggle(); break;
+    case 2 : DEBUG_PRINTLN("Pressed and released after a long time (take all relays to Off state )"); beep(); sr.setAllLow(); break;
     case 3 : DEBUG_PRINTLN("A click"); beep();relayToggle(1);break;
     case 4 : DEBUG_PRINTLN("Double click");beep();relayToggle(2); break;
     case 5 : DEBUG_PRINTLN("Triple click");beep();relayToggle(3); break;
