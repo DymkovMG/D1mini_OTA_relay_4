@@ -1,10 +1,10 @@
 #include <ESP8266WiFi.h>
-#include <ArduinoOTA.h>
-#include <PushButtonClicks.h>
-#include <ShiftRegister74HC595.h>
+#include <ArduinoOTA.h>  // обновление по воздуху
+#include <PushButtonClicks.h> // обработка нажатия кнопки
+#include <ShiftRegister74HC595.h> // сдвиговый регистр 
 #include <ESP8266WebServer.h>
 
-//#define DEBUG 
+//#define DEBUG    //расскоментировать для отладочных сообщений
 #ifdef DEBUG
   #define DEBUG_PRINT(x) Serial.print  (x)
   #define DEBUG_PRINTDEC(x) Serial.print  (x,DEC)
@@ -25,12 +25,13 @@
 const char* ssid = STASSID;
 const char* password = STAPSK;
 
+
 const char* www_username = "admin";
 const char* www_password = "esp8266";
 
-#define BUZZER_PIN  D5
-#define BUTTON_PIN  D6
-#define PHOTOSENSOR_PIN A0    // фоторезистор
+#define BUZZER_PIN  D5  //пищалка для оповещения
+#define BUTTON_PIN  D6 //кнопка для ручного управления релюхами
+#define PHOTOSENSOR_PIN A0    // фоторезистор для отключения релюх днём если забыли
 
 PushButton myButton;
 
@@ -61,8 +62,7 @@ void setup(void)
   
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
-  Serial.println("");
-
+  
   // Wait for connection
   while (WiFi.status() != WL_CONNECTED) 
   {
@@ -77,16 +77,13 @@ void setup(void)
 
 
   
-  ArduinoOTA.setHostname("WEMOSMINI_RELAY4");
+  ArduinoOTA.setHostname("WEMOSMINI_RELAY4");    // имя в сети для обновления по OTA
   // No authentication by default
   // ArduinoOTA.setPassword("admin");
   ArduinoOTA.begin();
   
-  server.on("/", []()
-            {
-              if(!server.authenticate(www_username, www_password)) return server.requestAuthentication();
-              server.send(200, "text/plain", "Login OK");
-            });
+  server.on("/", handleRoot);
+  server.onNotFound(handleNotFound);
   
   server.begin();
   
@@ -96,7 +93,30 @@ void setup(void)
 }
 
 
+void handleRoot() 
+{
+  if(!server.authenticate(www_username, www_password)) return server.requestAuthentication();
+  
+  server.send(200, "text/plain", "Login OK. Hello");
+}
 
+void handleNotFound()
+{
+  if(!server.authenticate(www_username, www_password)) return server.requestAuthentication();
+  
+  String message = "File Not Found\n\n";
+  message += "URI: ";
+  message += server.uri();
+  message += "\nMethod: ";
+  message += (server.method() == HTTP_GET)?"GET":"POST";
+  message += "\nArguments: ";
+  message += server.args();
+  message += "\n";
+  for (uint8_t i=0; i<server.args(); i++){
+    message += " " + server.argName(i) + ": " + server.arg(i) + "\n";
+  }
+  server.send(404, "text/plain", message);
+}
 
 void beep()
 {
