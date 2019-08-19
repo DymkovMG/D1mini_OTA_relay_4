@@ -25,7 +25,7 @@
 const char* ssid = STASSID;
 const char* password = STAPSK;
 
-
+ESP8266WebServer server(80);
 const char* www_username = "admin";
 const char* www_password = "esp8266";
 
@@ -41,8 +41,8 @@ boolean relaysONstate = false ;
 // parameters: (number of shift registers, data pin, clock pin, latch pin)
 ShiftRegister74HC595 sr (1, 5, 0, 4); 
 
-void handleRoot();              // function prototypes for HTTP handlers
-void handleNotFound();
+//void handleRoot();              // function prototypes for HTTP handlers
+//void handleNotFound();
 
 
 void setup(void) 
@@ -86,6 +86,10 @@ void setup(void)
   
   server.on("/", handleRoot);
   server.onNotFound(handleNotFound);
+  server.on("/rel1", handleRel1);
+  server.on("/rel2", handleRel2);
+  server.on("/rel3", handleRel3);
+  server.on("/rel4", handleRel4);
   
   server.begin();
   
@@ -99,10 +103,12 @@ void setup(void)
 
 void beep()
 {
-  tone(BUZZER_PIN,4000,100);
+  tone(BUZZER_PIN,3000,100);
 }
 
-void relayToggle(int rel) 
+
+
+uint8_t relayToggle(int rel) 
 {
   // read pin (zero based, i.e. 6th pin)
   uint8_t stateOfPin = sr.get(rel-1);
@@ -111,11 +117,14 @@ void relayToggle(int rel)
   if (stateOfPin==0) 
   {
     sr.set(rel-1, HIGH);
+    return 1;
   }
   else
   {
     sr.set(rel-1, LOW);
+    return 0;
   }
+  
 }
 
 void relaysToggle() 
@@ -138,6 +147,66 @@ void handleRoot()
   if(!server.authenticate(www_username, www_password)) return server.requestAuthentication();
   
   server.send(200, "text/plain", "Login OK. Hello");
+}
+
+void handleRel1()
+{
+  if(!server.authenticate(www_username, www_password)) return server.requestAuthentication();
+  uint8_t stateOfRelay =  relayToggle(1);
+  beep();
+  if (stateOfRelay==0) 
+  {
+    server.send(200, "text/plain", "OFF");
+  }
+  else
+  {
+    server.send(200, "text/plain", "ON");
+  }
+}
+
+void handleRel2()
+{
+  if(!server.authenticate(www_username, www_password)) return server.requestAuthentication();
+  uint8_t stateOfRelay =  relayToggle(2);
+  beep();
+  if (stateOfRelay==0) 
+  {
+    server.send(200, "text/plain", "OFF");
+  }
+  else
+  {
+    server.send(200, "text/plain", "ON");
+  }
+}
+
+void handleRel3()
+{
+  if(!server.authenticate(www_username, www_password)) return server.requestAuthentication();
+  uint8_t stateOfRelay =  relayToggle(3);
+  beep();
+  if (stateOfRelay==0) 
+  {
+    server.send(200, "text/plain", "OFF");
+  }
+  else
+  {
+    server.send(200, "text/plain", "ON");
+  }
+}
+
+void handleRel4()
+{
+  if(!server.authenticate(www_username, www_password)) return server.requestAuthentication();
+  uint8_t stateOfRelay =  relayToggle(4);
+  beep();
+  if (stateOfRelay==0) 
+  {
+    server.send(200, "text/plain", "OFF");
+  }
+  else
+  {
+    server.send(200, "text/plain", "ON");
+  }
 }
 
 void handleNotFound()
