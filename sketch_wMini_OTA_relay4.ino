@@ -37,6 +37,8 @@ PushButton myButton;
 
 boolean relaysONstate = false ; 
 
+unsigned int illuminationSensorValue = 0;
+
 // create a global shift register object
 // parameters: (number of shift registers, data pin, clock pin, latch pin)
 ShiftRegister74HC595 sr (1, 5, 0, 4); 
@@ -142,11 +144,59 @@ void relaysToggle()
   relaysONstate=!relaysONstate;
 }
 
+void handleNotFound()
+{
+  //if(!server.authenticate(www_username, www_password)) return server.requestAuthentication();
+  
+  String message = "File Not Found\n\n";
+  message += "URI: ";
+  message += server.uri();
+  message += "\nMethod: ";
+  message += (server.method() == HTTP_GET)?"GET":"POST";
+  message += "\nArguments: ";
+  message += server.args();
+  message += "\n";
+  for (uint8_t i=0; i<server.args(); i++){
+    message += " " + server.argName(i) + ": " + server.arg(i) + "\n";
+  }
+  server.send(404, "text/plain", message);
+  //server.send(404, "text/plain", "404: Not found"); // Send HTTP status 404 (Not Found) when there's no handler for the URI in the request
+
+}
+
 void handleRoot() 
 {
-  if(!server.authenticate(www_username, www_password)) return server.requestAuthentication();
+  //if(!server.authenticate(www_username, www_password)) return server.requestAuthentication();
   
-  server.send(200, "text/plain", "Login OK. Hello");
+  String message = "hello from Wemos mini!\n\n";
+  uint8_t valret =  sr.get(0);
+    if (valret == HIGH)
+    {message += "RELAY 1 ON\n";}
+    else
+    {message += "RELAY 1 OFF\n";};
+    
+    valret =  sr.get(1);
+    if (valret == HIGH)
+    {message += "RELAY 2 ON\n";}
+    else
+    {message += "RELAY 2 OFF\n";};
+    
+    valret =  sr.get(2);
+    if (valret == HIGH)
+    {message += "RELAY 3 ON\n";}
+    else
+    {message += "RELAY 3 OFF\n";};
+
+    valret =  sr.get(3);
+    if (valret == HIGH)
+    {message += "RELAY 4 ON\n";}
+    else
+    {message += "RELAY 4 OFF\n";};
+
+    message += "\nIllumination sensor value = "+String(illuminationSensorValue);
+  
+  
+  server.send(200, "text/plain", message);
 }
 
 void handleRel1()
@@ -209,25 +259,7 @@ void handleRel4()
   }
 }
 
-void handleNotFound()
-{
-  if(!server.authenticate(www_username, www_password)) return server.requestAuthentication();
-  
-  String message = "File Not Found\n\n";
-  message += "URI: ";
-  message += server.uri();
-  message += "\nMethod: ";
-  message += (server.method() == HTTP_GET)?"GET":"POST";
-  message += "\nArguments: ";
-  message += server.args();
-  message += "\n";
-  for (uint8_t i=0; i<server.args(); i++){
-    message += " " + server.argName(i) + ": " + server.arg(i) + "\n";
-  }
-  server.send(404, "text/plain", message);
-  //server.send(404, "text/plain", "404: Not found"); // Send HTTP status 404 (Not Found) when there's no handler for the URI in the request
 
-}
 
 void loop(void) 
 {
@@ -244,6 +276,7 @@ void loop(void)
     case 7 : DEBUG_PRINTLN("Five clicks"); break;
   }
   delay(10);
-  unsigned int sensorValue = analogRead(PHOTOSENSOR_PIN);
+  
+  illuminationSensorValue = analogRead(PHOTOSENSOR_PIN);
   //DEBUG_PRINTLNDEC(sensorValue);
 }
