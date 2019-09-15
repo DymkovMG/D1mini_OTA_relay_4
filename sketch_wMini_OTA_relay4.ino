@@ -30,6 +30,7 @@ const char* www_username = "admin";
 const char* www_password = "esp8266";
 
 #define BUZZER_PIN  D5  //пищалка для оповещения
+#define LED_PIN  D7  //светодиод для оповещения
 #define BUTTON_PIN  D6 //кнопка для ручного управления релюхами
 #define PHOTOSENSOR_PIN A0    // фоторезистор для отключения релюх днём если забыли
 
@@ -59,6 +60,9 @@ void setup(void)
 
   pinMode(BUZZER_PIN, OUTPUT);
   digitalWrite(BUZZER_PIN, LOW); 
+
+  pinMode(LED_PIN, OUTPUT);
+  digitalWrite(LED_PIN, LOW); 
 
   pinMode(BUTTON_PIN, INPUT_PULLUP);
 
@@ -101,6 +105,15 @@ void setup(void)
 }
 
 
+void led_on()
+{
+    digitalWrite(LED_PIN, HIGH); 
+}
+
+void led_off()
+{
+    digitalWrite(LED_PIN, LOW); 
+}
 
 
 void beep()
@@ -119,6 +132,7 @@ uint8_t relayToggle(int rel)
   if (stateOfPin==0) 
   {
     sr.set(rel-1, HIGH);
+    led_on();
     return 1;
   }
   else
@@ -268,7 +282,7 @@ void loop(void)
   switch(myButton.buttonCheck(millis(), digitalRead(BUTTON_PIN))) 
   {
     case 1 : DEBUG_PRINTLN("Pressed and not released for a long time"); break;
-    case 2 : DEBUG_PRINTLN("Pressed and released after a long time (take all relays to Off state )"); beep(); sr.setAllLow(); break;
+    case 2 : DEBUG_PRINTLN("Pressed and released after a long time (take all relays to Off state )"); beep(); sr.setAllLow();led_off(); break;
     case 3 : DEBUG_PRINTLN("A click"); beep();relayToggle(1);break;
     case 4 : DEBUG_PRINTLN("Double click");beep();relayToggle(2); break;
     case 5 : DEBUG_PRINTLN("Triple click");beep();relayToggle(3); break;
