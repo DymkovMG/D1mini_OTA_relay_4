@@ -118,7 +118,7 @@ void led_off()
 
 void beep()
 {
-  tone(BUZZER_PIN,3000,100);
+  tone(BUZZER_PIN,4000,100);
 }
 
 uint8_t checkRelayStatusOn()
@@ -152,20 +152,20 @@ uint8_t relayToggle(int rel)
   
 }
 
-void relaysToggle() 
-{
-  if (relaysONstate==true) 
-  {
-    sr.setAllLow();
+//void relaysToggle() 
+//{
+//  if (relaysONstate==true) 
+//  {
+//    sr.setAllLow();
     //relaysONstate=false;
-  }
-  else
-  {
-    sr.setAllHigh();
+//  }
+//  else
+//  {
+//    sr.setAllHigh();
     //relaysONstate=true;
-  }
-  relaysONstate=!relaysONstate;
-}
+//  }
+  //relaysONstate=!relaysONstate;
+//}
 
 void handleNotFound()
 {
@@ -298,7 +298,7 @@ void loop(void)
     case 6 : DEBUG_PRINTLN("Four clicks");beep();relayToggle(4); break;
     case 7 : DEBUG_PRINTLN("Five clicks"); break;
   }
-  //delay(10);
+  delay(10);
   
   if (checkRelayStatusOn())
     {led_on();}
