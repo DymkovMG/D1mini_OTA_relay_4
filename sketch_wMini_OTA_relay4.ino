@@ -36,7 +36,7 @@ const char* www_password = "esp8266";
 
 PushButton myButton;
 
-boolean relaysONstate = false ; 
+//boolean relaysONstate = false ; 
 
 unsigned int illuminationSensorValue = 0;
 
@@ -121,7 +121,16 @@ void beep()
   tone(BUZZER_PIN,3000,100);
 }
 
+uint8_t checkRelayStatusOn()
+{
+  for (int i=0; i <= 7; i++)
+  {
+      if (sr.get(i)==1) 
+      { return 1;}//return True if any relay is on
+   }
 
+  return 0; //return false if all relay is off
+}
 
 uint8_t relayToggle(int rel) 
 {
@@ -289,7 +298,12 @@ void loop(void)
     case 6 : DEBUG_PRINTLN("Four clicks");beep();relayToggle(4); break;
     case 7 : DEBUG_PRINTLN("Five clicks"); break;
   }
-  delay(10);
+  //delay(10);
+  
+  if (checkRelayStatusOn())
+    {led_on();}
+    else
+    {led_off();};
   
   illuminationSensorValue = analogRead(PHOTOSENSOR_PIN);
   //DEBUG_PRINTLNDEC(sensorValue);
