@@ -42,7 +42,7 @@ unsigned int illuminationSensorValue = 0;
 
 // create a global shift register object
 // parameters: (number of shift registers, data pin, clock pin, latch pin)
-ShiftRegister74HC595 sr (1, 5, 0, 4); 
+ShiftRegister74HC595 sr (1, 5, 0, 4); //сдвиговый регистр через который управляем релешками
 
 //void handleRoot();              // function prototypes for HTTP handlers
 //void handleNotFound();
@@ -123,7 +123,7 @@ void beep()
 
 uint8_t checkRelayStatusOn()
 {
-  for (int i=0; i <= 7; i++)
+  for (int i=0; i <= 3; i++) // проверяем 4 регистрf так как используем только  4  реле
   {
       if (sr.get(i)==1) 
       { return 1;}//return True if any relay is on
@@ -191,7 +191,7 @@ void handleRoot()
   //if(!server.authenticate(www_username, www_password)) return server.requestAuthentication();
   
   String message = "hello from Wemos mini!\n\n";
-  uint8_t valret =  sr.get(0);
+  /*uint8_t valret =  sr.get(0);
     if (valret == HIGH)
     {message += "RELAY 1 ON\n";}
     else
@@ -214,6 +214,14 @@ void handleRoot()
     {message += "RELAY 4 ON\n";}
     else
     {message += "RELAY 4 OFF\n";};
+   */
+  for (int i=0; i <= 3; i++) // проверяем 4 регистрa 
+    {
+      if (sr.get(i)==1) 
+        {message += "RELAY "+(i+1)+" ON\n";}
+      else
+        {message +="RELAY "+(i+1)+" OFF\n";};
+    }
 
     message += "\nIllumination sensor value = "+String(illuminationSensorValue);
   
