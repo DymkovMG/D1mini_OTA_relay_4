@@ -141,7 +141,6 @@ uint8_t relayToggle(int rel)
   if (stateOfPin==0) 
   {
     sr.set(rel-1, HIGH);
-    led_on();
     return 1;
   }
   else
@@ -300,7 +299,7 @@ void loop(void)
   }
   delay(10);
   
-  if (checkRelayStatusOn())
+  if (checkRelayStatusOn()) 
     {led_on();}
     else
     {led_off();};
