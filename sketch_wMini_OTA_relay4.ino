@@ -298,7 +298,7 @@ void loop(void)
   switch(myButton.buttonCheck(millis(), digitalRead(BUTTON_PIN))) 
   {
     case 1 : DEBUG_PRINTLN("Pressed and not released for a long time"); break;
-    case 2 : DEBUG_PRINTLN("Pressed and released after a long time (take all relays to Off state )"); beep(); sr.setAllLow();led_off(); break;
+    case 2 : DEBUG_PRINTLN("Pressed and released after a long time (take all relays to Off state )"); beep(); sr.setAllLow(); break;
     case 3 : DEBUG_PRINTLN("A click"); beep();relayToggle(1);break;
     case 4 : DEBUG_PRINTLN("Double click");beep();relayToggle(2); break;
     case 5 : DEBUG_PRINTLN("Triple click");beep();relayToggle(3); break;
