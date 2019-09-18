@@ -232,7 +232,7 @@ void handleRoot()
 void handleRel1()
 {
   if(!server.authenticate(www_username, www_password)) return server.requestAuthentication();
-  uint8_t stateOfRelay =  relayToggle(1);
+ /* uint8_t stateOfRelay =  relayToggle(1);
   beep();
   if (stateOfRelay==0) 
   {
@@ -241,7 +241,15 @@ void handleRel1()
   else
   {
     server.send(200, "text/plain", "ON");
+  }*/
+  if (relayToggle(1)) 
+  {
+    server.send(200, "text/plain", "ON");
   }
+  else
+  {
+    server.send(200, "text/plain", "OFF");
+  } 
 }
 
 void handleRel2()
