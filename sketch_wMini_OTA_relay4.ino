@@ -42,8 +42,8 @@ PushButton myButton;
 unsigned int illuminationSensorValue = 0;
 
 // create a global shift register object
-// parameters: (number of shift registers, data pin, clock pin, latch pin)
-ShiftRegister74HC595 sr (1, 5, 0, 4); //сдвиговый регистр через который управляем релешками
+// parameters: <number of shift registers> (data pin, clock pin, latch pin)
+ShiftRegister74HC595<1> sr (5, 0, 4); //сдвиговый регистр через который управляем релешками
 
 //void handleRoot();              // function prototypes for HTTP handlers
 //void handleNotFound();
@@ -254,7 +254,7 @@ void handleRel4()
 
 void loop(void) 
 {
-  delay(1);
+  delay(2);
   ArduinoOTA.handle();
   server.handleClient();
   EasyBuzzer.update();
