@@ -3,6 +3,7 @@
 #include <PushButtonClicks.h> // обработка нажатия кнопки
 #include <ShiftRegister74HC595.h> // сдвиговый регистр 
 #include <ESP8266WebServer.h>
+#include <EasyBuzzer.h>
 
 //#define DEBUG    //расскоментировать для отладочных сообщений
 #ifdef DEBUG
@@ -66,7 +67,7 @@ void setup(void)
 
   pinMode(BUTTON_PIN, INPUT_PULLUP);
 
-  
+  EasyBuzzer.setPin(BUZZER_PIN);
   
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
@@ -100,7 +101,7 @@ void setup(void)
   server.begin();
   
   digitalWrite(LED_BUILTIN, HIGH);//откл светодиод
-  beep();
+  EasyBuzzer.singleBeep(1000,70);
   DEBUG_PRINTLN("Initialization..OK");
 }
 
@@ -113,12 +114,6 @@ void led_on()
 void led_off()
 {
     digitalWrite(LED_PIN, LOW); 
-}
-
-
-void beep()
-{
-  tone(BUZZER_PIN,4000,100);
 }
 
 uint8_t checkRelayStatusOn()
@@ -141,30 +136,18 @@ uint8_t relayToggle(int rel)
   if (stateOfPin==0) 
   {
     sr.set(rel-1, HIGH);
+    EasyBuzzer.singleBeep(4000,70);
     return 1;
   }
   else
   {
     sr.set(rel-1, LOW);
+    EasyBuzzer.singleBeep(2000,100);
     return 0;
   }
   
 }
 
-//void relaysToggle() 
-//{
-//  if (relaysONstate==true) 
-//  {
-//    sr.setAllLow();
-    //relaysONstate=false;
-//  }
-//  else
-//  {
-//    sr.setAllHigh();
-    //relaysONstate=true;
-//  }
-  //relaysONstate=!relaysONstate;
-//}
 
 void handleNotFound()
 {
@@ -191,36 +174,21 @@ void handleRoot()
   //if(!server.authenticate(www_username, www_password)) return server.requestAuthentication();
   
   String message = "hello from Wemos mini!\n\n";
-  /*uint8_t valret =  sr.get(0);
-    if (valret == HIGH)
-    {message += "RELAY 1 ON\n";}
-    else
-    {message += "RELAY 1 OFF\n";};
-    
-    valret =  sr.get(1);
-    if (valret == HIGH)
-    {message += "RELAY 2 ON\n";}
-    else
-    {message += "RELAY 2 OFF\n";};
-    
-    valret =  sr.get(2);
-    if (valret == HIGH)
-    {message += "RELAY 3 ON\n";}
-    else
-    {message += "RELAY 3 OFF\n";};
-
-    valret =  sr.get(3);
-    if (valret == HIGH)
-    {message += "RELAY 4 ON\n";}
-    else
-    {message += "RELAY 4 OFF\n";};
-   */
+  
   for (int i=0; i <= 3; i++) // проверяем 4 регистрa 
     {
       if (sr.get(i)==1) 
-        {message += "RELAY "+(i+1)+" ON\n";}
+        {
+          message += "RELAY ";
+          message +=(i+1);
+          message +=" ON\n";
+        }
       else
-        {message +="RELAY "+(i+1)+" OFF\n";};
+        {
+          message += "RELAY ";
+          message +=(i+1);
+          message +=" OFF\n";  
+        };
     }
 
     message += "\nIllumination sensor value = "+String(illuminationSensorValue);
@@ -232,16 +200,7 @@ void handleRoot()
 void handleRel1()
 {
   if(!server.authenticate(www_username, www_password)) return server.requestAuthentication();
- /* uint8_t stateOfRelay =  relayToggle(1);
-  beep();
-  if (stateOfRelay==0) 
-  {
-    server.send(200, "text/plain", "OFF");
-  }
-  else
-  {
-    server.send(200, "text/plain", "ON");
-  }*/
+
   if (relayToggle(1)) 
   {
     server.send(200, "text/plain", "ON");
@@ -255,65 +214,61 @@ void handleRel1()
 void handleRel2()
 {
   if(!server.authenticate(www_username, www_password)) return server.requestAuthentication();
-  uint8_t stateOfRelay =  relayToggle(2);
-  beep();
-  if (stateOfRelay==0) 
-  {
-    server.send(200, "text/plain", "OFF");
-  }
-  else
+  if (relayToggle(2)) 
   {
     server.send(200, "text/plain", "ON");
   }
+  else
+  {
+    server.send(200, "text/plain", "OFF");
+  } 
 }
 
 void handleRel3()
 {
   if(!server.authenticate(www_username, www_password)) return server.requestAuthentication();
-  uint8_t stateOfRelay =  relayToggle(3);
-  beep();
-  if (stateOfRelay==0) 
-  {
-    server.send(200, "text/plain", "OFF");
-  }
-  else
+  if (relayToggle(3)) 
   {
     server.send(200, "text/plain", "ON");
   }
+  else
+  {
+    server.send(200, "text/plain", "OFF");
+  } 
 }
 
 void handleRel4()
 {
   if(!server.authenticate(www_username, www_password)) return server.requestAuthentication();
-  uint8_t stateOfRelay =  relayToggle(4);
-  beep();
-  if (stateOfRelay==0) 
-  {
-    server.send(200, "text/plain", "OFF");
-  }
-  else
+  if (relayToggle(4)) 
   {
     server.send(200, "text/plain", "ON");
   }
+  else
+  {
+    server.send(200, "text/plain", "OFF");
+  } 
 }
 
 
 
 void loop(void) 
 {
+  delay(1);
   ArduinoOTA.handle();
   server.handleClient();
+  EasyBuzzer.update();
   switch(myButton.buttonCheck(millis(), digitalRead(BUTTON_PIN))) 
   {
     case 1 : DEBUG_PRINTLN("Pressed and not released for a long time"); break;
-    case 2 : DEBUG_PRINTLN("Pressed and released after a long time (take all relays to Off state )"); beep(); sr.setAllLow(); break;
-    case 3 : DEBUG_PRINTLN("A click"); beep();relayToggle(1);break;
-    case 4 : DEBUG_PRINTLN("Double click");beep();relayToggle(2); break;
-    case 5 : DEBUG_PRINTLN("Triple click");beep();relayToggle(3); break;
-    case 6 : DEBUG_PRINTLN("Four clicks");beep();relayToggle(4); break;
+    case 2 : DEBUG_PRINTLN("Pressed and released after a long time (take all relays to Off state )"); EasyBuzzer.singleBeep(2000,150); sr.setAllLow(); break;
+    case 3 : DEBUG_PRINTLN("A click"); relayToggle(1);break;
+    case 4 : DEBUG_PRINTLN("Double click");relayToggle(2); break;
+    case 5 : DEBUG_PRINTLN("Triple click");relayToggle(3); break;
+    case 6 : DEBUG_PRINTLN("Four clicks");relayToggle(4); break;
     case 7 : DEBUG_PRINTLN("Five clicks"); break;
   }
-  delay(10);
+  
   
   if (checkRelayStatusOn()) 
     {led_on();}
